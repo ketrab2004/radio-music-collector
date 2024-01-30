@@ -8,9 +8,6 @@ jobs:
   get:
     runs-on: ubuntu-latest
 
-    when:
-      if:
-
     steps:
       - uses: actions/checkout@v3
 
