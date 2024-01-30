@@ -1,26 +1,28 @@
 name: get-songs
 
 on:
+  workflow_dispatch:
+    # for debugging/testing
   schedule:
-    - cron: 21 3 * * *
+    - cron: 21 3 * * * # every day at 3:21
 
 jobs:
   get:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: cache deno installation and deno.land dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
-          key: deno-${{ hashFiles('/home/runnenr/**/*') }}
+          key: deno-${{ hashFiles('/home/runner/**/*') }}
           restore-keys: deno-
           path: |
             /home/runner/.deno
             /home/runner/.cache/deno/deps/https/deno.land
 
-      - uses: denoland/setup-deno@v1
+      - uses: denoland/setup-deno@v1.1.4
         with:
           deno-version: v1.40
 
@@ -35,7 +37,7 @@ jobs:
 
       - name: Get current date
         id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+        run: echo "date=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
 
       - name: Store gotten songs
         uses: devops-infra/action-commit-push@v0.9.2
