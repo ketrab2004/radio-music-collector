@@ -2,6 +2,7 @@
   "version": "3",
   "packages": {
     "specifiers": {
+      "npm:chrono-node@^2.7.5": "npm:chrono-node@2.7.5",
       "npm:cmd-ts@^0.13": "npm:cmd-ts@0.13.0"
     },
     "npm": {
@@ -22,6 +23,12 @@
           "supports-color": "supports-color@7.2.0"
         }
       },
+      "chrono-node@2.7.5": {
+        "integrity": "sha512-VJWqFN5rWmXVvXAxOD4i0jX8Tb4cLswaslyaAFhxM45zNXPsZleygPbgiaYBD7ORb9fj07zBgJb0Q6eKL+0iJg==",
+        "dependencies": {
+          "dayjs": "dayjs@1.11.10"
+        }
+      },
       "cmd-ts@0.13.0": {
         "integrity": "sha512-nsnxf6wNIM/JAS7T/x/1JmbEsjH0a8tezXqqpaL0O6+eV0/aDEnRxwjxpu0VzDdRcaC1ixGSbRlUuf/IU59I4g==",
         "dependencies": {
@@ -39,6 +46,10 @@
       },
       "color-name@1.1.4": {
         "integrity": "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==",
+        "dependencies": {}
+      },
+      "dayjs@1.11.10": {
+        "integrity": "sha512-vjAczensTgRcqDERK0SR2XMwsF/tSvnvlv6VcF2GIhg6Sx4yOIt/irsr1RDJsKiIyBzJDpCoXiWWq28MqH2cnQ==",
         "dependencies": {}
       },
       "debug@4.3.4": {
@@ -81,6 +92,7 @@
   },
   "workspace": {
     "dependencies": [
+      "npm:chrono-node@^2.7.5",
       "npm:cmd-ts@^0.13"
     ]
   }
