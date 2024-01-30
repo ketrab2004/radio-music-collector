@@ -1,0 +1,12 @@
+{
+    "tasks": {
+        "cache": "deno cache main.ts",
+        "info": "deno info main.ts",
+
+        "watch": "deno run --watch --allow-all main.ts",
+        "run": "deno run --allow-read --allow-write --allow-sys=osRelease --allow-env main.ts get"
+    },
+    "imports": {
+        "cmd-ts": "npm:cmd-ts@^0.13"
+    }
+}
