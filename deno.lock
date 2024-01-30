@@ -3,7 +3,8 @@
   "packages": {
     "specifiers": {
       "npm:chrono-node@^2.7.5": "npm:chrono-node@2.7.5",
-      "npm:cmd-ts@^0.13": "npm:cmd-ts@0.13.0"
+      "npm:cmd-ts@^0.13": "npm:cmd-ts@0.13.0",
+      "npm:date-fns@^3.3.1": "npm:date-fns@3.3.1"
     },
     "npm": {
       "ansi-regex@5.0.1": {
@@ -46,6 +47,10 @@
       },
       "color-name@1.1.4": {
         "integrity": "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==",
+        "dependencies": {}
+      },
+      "date-fns@3.3.1": {
+        "integrity": "sha512-y8e109LYGgoQDveiEBD3DYXKba1jWf5BA8YU1FL5Tvm0BTdEfy54WLCwnuYWZNnzzvALy/QQ4Hov+Q9RVRv+Zw==",
         "dependencies": {}
       },
       "dayjs@1.11.10": {
@@ -93,7 +98,8 @@
   "workspace": {
     "dependencies": [
       "npm:chrono-node@^2.7.5",
-      "npm:cmd-ts@^0.13"
+      "npm:cmd-ts@^0.13",
+      "npm:date-fns@^3.3.1"
     ]
   }
 }

@@ -4,10 +4,11 @@
         "info": "deno info main.ts",
 
         "watch": "deno run --watch --allow-all main.ts",
-        "run": "deno run --allow-read --allow-write --allow-sys=osRelease --allow-env main.ts get"
+        "run": "deno run --allow-read --allow-write --allow-sys=osRelease --allow-env --allow-net main.ts get"
     },
     "imports": {
         "cmd-ts": "npm:cmd-ts@^0.13",
-        "chrono": "npm:chrono-node@^2.7.5"
+        "chrono": "npm:chrono-node@^2.7.5",
+        "date-fns": "npm:date-fns@^3.3.1"
     }
 }
