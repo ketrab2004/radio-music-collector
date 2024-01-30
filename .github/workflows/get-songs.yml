@@ -43,5 +43,5 @@ jobs:
         uses: devops-infra/action-commit-push@v0.9.2
         with:
           github_token: "${{ secrets.GITHUB_TOKEN }}"
-          commit_prefix: "[bot]"
-          commit_message: "Got songs ${{ steps.date.outputs.date }}"
+          commit_prefix: "chore: "
+          commit_message: "got yesterday's songs on ${{ steps.date.outputs.date }}"

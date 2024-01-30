@@ -1,6 +1,6 @@
 import pause from "./pause.ts";
 
-const fetchDelayMs = 2500;
+const fetchDelayMs = 2358.13;
 
 type StackItem = {
     params: Parameters<typeof fetch>,
