@@ -10,17 +10,18 @@ jobs:
   get:
     runs-on: ubuntu-latest
 
+    env:
+      DENO_DIR: /home/runner/.cache/deno
+
     steps:
       - uses: actions/checkout@v4
 
       - name: cache deno installation and deno.land dependencies
         uses: actions/cache@v4
         with:
-          key: deno-${{ hashFiles('/home/runner/**/*') }}
+          key: deno-${{ hashFiles('deno.lock') }}
           restore-keys: deno-
-          path: |
-            /home/runner/.deno
-            /home/runner/.cache/deno/deps/https/deno.land
+          path: ${{ env.DENO_DIR }}
 
       - uses: denoland/setup-deno@v1.1.4
         with:
