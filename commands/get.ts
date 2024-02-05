@@ -5,6 +5,22 @@ import Radios from "../radios.ts";
 import { delayedFetch } from "../misc/fetch_runner.ts";
 
 
+export type RadioPlayedSong = {
+    rs_track: string;
+    rs_artist: string;
+}
+export function hasPlayedSongData(item: {[key: string]: unknown}): item is RadioPlayedSong {
+    if (typeof item["rs_track"] != "string") {
+        return false;
+    }
+    if (typeof item.rs_artist != "string") {
+        return false;
+    }
+
+    return true;
+}
+
+
 const getDate = command({
     name: "get",
     args: {
@@ -15,7 +31,8 @@ const getDate = command({
 
         console.log(`getting songs for ${date}`);
 
-        let handledRadioStations = 0;
+        let handledRadioStations = 0,
+            failedToHandleRadioStations = 0;
 
         for (const radio of Radios) {
             const body = `rid=${radio.rid}&rs_id=${radio.rs_id ?? 0}&date=${date}&hash=${radio.hash ?? ''}`;
@@ -39,26 +56,35 @@ const getDate = command({
                 .then(response => response.text())
                 .then(body => {
                     handledRadioStations ++;
+                    failedToHandleRadioStations ++;
                     console.log(`got response for ${radio.name} and started parsing it`);
+                    console.group();
 
                     if (body.length <= 0) {
-                        throw `request for ${radio.name} failed and returned nothing`;
+                        console.warn(`request for ${radio.name} failed and returned nothing`);
+                        return;
                     }
 
                     let json;
                     try {
                         json = JSON.parse(body);
                     } catch (e) {
-                        console.error(e);
-                        throw `failed to parse result for ${radio.name} to json`;
+                        console.warn(`failed to parse result for ${radio.name} to json`, e);
+                        return;
                     }
 
                     if (!Array.isArray(json)) {
-                        throw `returned json for ${radio.name} isn't array like expected`;
+                        console.warn(`returned json for ${radio.name} isn't array like expected`);
+                        return;
+                    }
+                    if (!json.every(hasPlayedSongData)) {
+                        console.warn(`not each item in returned array for ${radio.name} has the required properties`);
+                        return;
                     }
 
                     if (json.length <= 0) {
-                        throw `returned played music list for ${radio.name} is empty, is the given date not too far in the past?`;
+                        console.warn(`returned played music list for ${radio.name} is empty, is the given date not too far in the past?`);
+                        return;
                     }
 
                     const path = `./data/${radio.name}/${format(date, "yyyy/MM/dd")}`;
@@ -85,8 +111,17 @@ const getDate = command({
                         { create: true }
                     );
 
+                    // no early return happened, so we didn't need to increase after all...
+                    failedToHandleRadioStations --;
+
+                }).finally(() => {
+                    console.groupEnd();
                     if (handledRadioStations >= Radios.length) {
-                        console.log(`finished getting music played on ${Radios.length} radio stations on ${date} succesfully!`);
+                        console.log(`finished getting music played on ${Radios.length - failedToHandleRadioStations}/${Radios.length} radio stations on ${date} successfully!`);
+
+                        if (failedToHandleRadioStations > 0) {
+                            throw `failed to get songs for ${failedToHandleRadioStations} radio station(s)`;
+                        }
                     }
                 });
         }

@@ -44,11 +44,13 @@ jobs:
         run: deno task run "yesterday at 12 UTC"
 
       - name: Get current date
+        continue-on-error: true
         id: date
         run: echo "date=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
 
       - name: Store gotten songs
         uses: stefanzweifel/git-auto-commit-action@v5
+        continue-on-error: true
         with:
           commit_message: "chore: got yesterday's songs on ${{ steps.date.outputs.date }}"
           # branch: data
