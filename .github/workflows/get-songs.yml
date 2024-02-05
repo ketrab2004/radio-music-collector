@@ -14,7 +14,14 @@ jobs:
       DENO_DIR: /home/runner/.cache/deno
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # - name: Checkout previous data
+      #   uses: actions/checkout@v4
+      #   with:
+      #     ref: data
+      #     path: data
 
       - name: cache deno installation and deno.land dependencies
         uses: actions/cache@v4
@@ -41,8 +48,8 @@ jobs:
         run: echo "date=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
 
       - name: Store gotten songs
-        uses: devops-infra/action-commit-push@v0.9.2
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          github_token: "${{ secrets.GITHUB_TOKEN }}"
-          commit_prefix: "chore: "
-          commit_message: "got yesterday's songs on ${{ steps.date.outputs.date }}"
+          commit_message: "chore: got yesterday's songs on ${{ steps.date.outputs.date }}"
+          # branch: data
+          file_pattern: data/**/*
