@@ -8,7 +8,7 @@ const Date: Type<string, Date> = {
         const result = parseDate(input);
 
         if (result === null) {
-            throw `failed to parse date '${input}'`;
+            throw new Error(`failed to parse date '${input}'`);
         }
 
         return result;
