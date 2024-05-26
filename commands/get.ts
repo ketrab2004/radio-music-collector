@@ -88,24 +88,25 @@ const getDate = command({
                     Deno.mkdirSync(path, { recursive: true });
 
                     Deno.writeTextFileSync(`${path}/raw.json`, body, { create: true });
-                    Deno.writeTextFileSync(
-                        `${path}/list.txt`,
-                        json
-                            .filter(item => item.rs_track)
-                            .reverse()
-                            .map(item => `${item.rs_artist.replace('-', '')} - ${item.rs_track.replace('-', '')}`)
-                            .reduce<[string[], Set<string>]>(([out, set], cur) => { // filter duplicates
-                                if (!set.has(cur)) {
-                                    out.push(cur);
-                                    set.add(cur);
-                                }
+                    //TODO move this to a different command
+                    // Deno.writeTextFileSync(
+                    //     `${path}/list.txt`,
+                    //     json
+                    //         .filter(item => item.rs_track)
+                    //         .reverse()
+                    //         .map(item => `${item.rs_artist.replace('-', '')} - ${item.rs_track.replace('-', '')}`)
+                    //         .reduce<[string[], Set<string>]>(([out, set], cur) => { // filter duplicates
+                    //             if (!set.has(cur)) {
+                    //                 out.push(cur);
+                    //                 set.add(cur);
+                    //             }
 
-                                return [out, set];
+                    //             return [out, set];
 
-                            }, [[], new Set()])[0]
-                            .join("\n"),
-                        { create: true }
-                    );
+                    //         }, [[], new Set()])[0]
+                    //         .join("\n"),
+                    //     { create: true }
+                    // );
 
                     // no early return happened, so we didn't need to increase after all...
                     failedToHandleRadioStations --;
