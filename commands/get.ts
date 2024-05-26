@@ -1,8 +1,9 @@
-import { command, positional } from "cmd-ts";
+import { command, number, optional, positional } from "cmd-ts";
 import { format } from "date-fns";
 import DateType from "../misc/date_argument_type.ts";
 import Radios from "../radios.ts";
-import { delayedFetch } from "../misc/fetch_runner.ts";
+import ThrottledTaskRunner from "../misc/throttled_task_runner.ts";
+import { option } from "cmd-ts";
 
 
 export type RadioPlayedSong = {
@@ -24,11 +25,22 @@ export function hasPlayedSongData(item: {[key: string]: unknown}): item is Radio
 const getDate = command({
     name: "get",
     args: {
-        date: positional({ type: DateType, displayName: "date", description: "for what date to get songs" })
+        date: positional({
+            type: DateType,
+            displayName: "date",
+            description: "for what date to get songs"
+        }),
+        fetchDelay: option({
+            type: optional(number),
+            long: "fetchDelay",
+            short: "D",
+            description: "delay in milliseconds between each fetch",
+        })
     },
     handler: args => {
-        const date = format(args.date, "yyyy-MM-dd");
+        const runner = new ThrottledTaskRunner<Response>(args.fetchDelay);
 
+        const date = format(args.date, "yyyy-MM-dd");
         console.log(`getting songs for ${date}`);
 
         let handledRadioStations = 0,
@@ -37,7 +49,7 @@ const getDate = command({
         for (const radio of Radios) {
             const body = `rid=${radio.rid}&rs_id=${radio.rs_id ?? 0}&date=${date}&hash=${radio.hash ?? ''}`;
 
-            delayedFetch(`${radio.domain}/get-song`, {
+            runner.addTask(() => fetch(`${radio.domain}/get-song`, {
                 method: "POST",
                 credentials: "include",
                 headers: {
@@ -52,11 +64,11 @@ const getDate = command({
                     "x-requested-with": "XMLHttpRequest"
                 },
                 body
-            })
+            }))
                 .then(response => response.text())
                 .then(body => {
                     handledRadioStations ++;
-                    failedToHandleRadioStations ++;
+                    failedToHandleRadioStations ++; // gets decreased again if no early return occurs
                     console.log(`got response for ${radio.name} and started parsing it`);
                     console.group();
 
@@ -87,7 +99,7 @@ const getDate = command({
                         return;
                     }
 
-                    const path = `./data/${radio.name}/${format(date, "yyyy/MM/dd")}`;
+                    const path = `./data/${radio.name}/${format(args.date, "yyyy/MM/dd")}`;
 
                     Deno.mkdirSync(path, { recursive: true });
 
