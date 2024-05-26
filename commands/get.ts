@@ -1,25 +1,9 @@
-import { command, number, optional, positional } from "cmd-ts";
+import { command, positional, option, optional, number } from "cmd-ts";
 import { format } from "date-fns";
-import DateType from "../misc/date_argument_type.ts";
+import { DateType } from "../misc/date_argument_type.ts";
 import Radios from "../radios.ts";
 import ThrottledTaskRunner from "../misc/throttled_task_runner.ts";
-import { option } from "cmd-ts";
-
-
-export type RadioPlayedSong = {
-    rs_track: string;
-    rs_artist: string;
-}
-export function hasPlayedSongData(item: {[key: string]: unknown}): item is RadioPlayedSong {
-    if (typeof item["rs_track"] != "string") {
-        return false;
-    }
-    if (typeof item.rs_artist != "string") {
-        return false;
-    }
-
-    return true;
-}
+import { hasPlayedSongData } from "../misc/played_song_type.ts";
 
 
 const getDate = command({
