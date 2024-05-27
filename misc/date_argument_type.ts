@@ -1,7 +1,7 @@
 import { Type } from "cmd-ts";
 import { parseDate } from "chrono";
 
-const Date: Type<string, Date> = {
+export const DateType: Type<string, Date> = {
     displayName: "date time",
     description: "parses given date string to date using Chrono (so 'yesterday' is supported)",
     from: async input => {
@@ -14,5 +14,3 @@ const Date: Type<string, Date> = {
         return result;
     }
 }
-
-export default Date;
