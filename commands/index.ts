@@ -1,4 +1,4 @@
-import get from "./get.ts";
+import get from "./get/index.ts";
 
 export {
     get
