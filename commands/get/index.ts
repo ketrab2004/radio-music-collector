@@ -70,8 +70,7 @@ const getDate = command({
                 .then(body => {
                     handledRadioStations ++;
 
-                    logger.info(`got response for ${radio.name} and started parsing it`);
-                    logger.group();
+                    logger.group(`parsing ${radio.name} response`);
 
                     const result = handleStation(radio, args.date, body);
 

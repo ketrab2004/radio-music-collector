@@ -4,7 +4,7 @@
         "info": "deno info && deno info main.ts",
 
         "watch": "deno run --watch --allow-all main.ts",
-        "run": "deno run --allow-read --allow-write --allow-sys=osRelease --allow-env --allow-net main.ts"
+        "run": "deno run --allow-read --allow-write --allow-sys=osRelease,uid --allow-env --allow-net main.ts"
     },
     "imports": {
         "cmd-ts": "npm:cmd-ts@^0.13",
