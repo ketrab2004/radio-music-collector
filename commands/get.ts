@@ -100,7 +100,8 @@ const getDate = command({
                             .addTable([
                                 ["#", "Result", "Radio", "Message"],
                                 ...ghSummaryRows
-                            ]);
+                            ])
+                            .write();
                     }
 
                     if (failedToHandleRadioStations <= 0)
