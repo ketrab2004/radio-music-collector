@@ -1,4 +1,4 @@
-import { command, positional, option, optional, number } from "cmd-ts";
+import { command, positional, option, flag, optional, number, boolean } from "cmd-ts";
 import { format } from "date-fns";
 import { DateType } from "../misc/date_argument_type.ts";
 import Radios from "../radios.ts";
@@ -19,6 +19,12 @@ const getDate = command({
             long: "fetchDelay",
             short: "D",
             description: "delay in milliseconds between each fetch",
+        }),
+        requireAllStations: flag({
+            type: boolean,
+            long: "allStations",
+            short: "S",
+            description: "require all stations, erroring if not all succeeded"
         })
     },
     handler: args => {
@@ -113,13 +119,20 @@ const getDate = command({
 
                 }).finally(() => {
                     console.groupEnd();
-                    if (handledRadioStations >= Radios.length) {
-                        console.log(`finished getting music played on ${Radios.length - failedToHandleRadioStations}/${Radios.length} radio stations on ${date} successfully!`);
+                    if (handledRadioStations < Radios.length)
+                        return;
 
-                        if (failedToHandleRadioStations > 0) {
-                            throw `failed to get songs for ${failedToHandleRadioStations} radio station(s)`;
-                        }
-                    }
+                    console.log(`finished getting music played on ${Radios.length - failedToHandleRadioStations}/${Radios.length} radio stations on ${date} successfully!`);
+
+                    if (failedToHandleRadioStations <= 0)
+                        return;
+
+                    const msg = `failed to get songs for ${failedToHandleRadioStations} radio station(s)`;
+
+                    if (args.requireAllStations || failedToHandleRadioStations == Radios.length)
+                        throw msg;
+                    else
+                        console.log(msg);
                 });
         }
     }
