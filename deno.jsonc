@@ -9,6 +9,7 @@
     "imports": {
         "cmd-ts": "npm:cmd-ts@^0.13",
         "chrono": "npm:chrono-node@^2.7.5",
-        "date-fns": "npm:date-fns@^3.3.1"
+        "date-fns": "npm:date-fns@^3.3.1",
+        "@action/core": "npm:@actions/core@^1.10.1"
     }
 }

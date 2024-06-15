@@ -41,7 +41,7 @@ jobs:
         run: deno task info
 
       - name: Get songs
-        run: deno task run get "yesterday at 12 UTC"
+        run: deno task run get "yesterday at 12 UTC" --gh-action
 
       - name: Get current date
         continue-on-error: true
