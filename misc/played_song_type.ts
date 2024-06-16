@@ -1,6 +1,7 @@
 export type RadioPlayedSong = {
     rs_track: string;
     rs_artist: string;
+    [key: string]: unknown;
 }
 export function hasPlayedSongData(item: {[key: string]: unknown}): item is RadioPlayedSong {
     if (typeof item["rs_track"] != "string") {

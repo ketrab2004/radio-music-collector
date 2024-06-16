@@ -1,11 +1,11 @@
 import { command, positional, option, flag, optional, number, boolean } from "cmd-ts";
 import { format } from "date-fns";
 import * as gh from "@action/core";
-import { GhLogger, SimpleLogger } from "../../misc/logger.ts";
-import { DateType } from "../../misc/date_argument_type.ts";
-import Radios from "../../radios.ts";
-import ThrottledTaskRunner from "../../misc/throttled_task_runner.ts";
-import handleStation from "./handleStation.ts";
+import { GhLogger, SimpleLogger } from "../misc/logger.ts";
+import { DateType } from "../misc/argument/index.ts";
+import Radios from "../radios.ts";
+import ThrottledTaskRunner from "../misc/throttled_task_runner.ts";
+import { parsePlayedSongs } from "../misc/parse_played_songs.ts";
 
 
 const getDate = command({
@@ -72,17 +72,24 @@ const getDate = command({
 
                     logger.group(`parsing ${radio.name} response`);
 
-                    const result = handleStation(radio, args.date, body);
+                    const result = parsePlayedSongs(body);
 
-                    if (result !== true) {
-                        logger.warn(result.title, result.msg);
+                    if (typeof result == "string") {
+                        const msg = `for ${radio.name} ${result}`;
+                        logger.warn(`Request for ${radio.name} failed`, msg);
 
                         failedToHandleRadioStations ++;
 
-                        ghSummaryRows.push([`${handledRadioStations}.`, "❌", radio.name, result.msg]);
-                    } else {
-                        ghSummaryRows.push([`${handledRadioStations}.`, "✅", radio.name, ""]);
+                        ghSummaryRows.push([`${handledRadioStations}.`, "❌", radio.name, msg]);
+                        return;
                     }
+
+                    const path = `./data/${radio.name}/${format(date, "yyyy/MM/dd")}`;
+
+                    Deno.mkdirSync(path, { recursive: true });
+                    Deno.writeTextFileSync(`${path}/raw.json`, body, { create: true });
+
+                    ghSummaryRows.push([`${handledRadioStations}.`, "✅", radio.name, ""]);
 
                 }).finally(() => {
                     logger.groupEnd();
