@@ -1,5 +1,7 @@
-import get from "./get/index.ts";
+import get from "./get.ts";
+import compile from "./compile.ts";
 
 export {
-    get
+    get,
+    compile
 };
