@@ -58,6 +58,11 @@ const compileList = command({
             short: "U",
             description: "whether to filter out duplicates"
         }),
+        fileLimit: option({
+            type: optional(number),
+            long: "file-limit",
+            description: "limit per file, to split the output to multiple files"
+        })
     },
     handler: args => {
         const stations = getStations(args.stations);
@@ -154,19 +159,13 @@ const compileList = command({
 
             const path = `./data/${station.name}/${args.ranges.raw}`;
 
-            let ext = args.outputFormat,
-                body;
-
+            let ext = args.outputFormat;
             switch (args.outputFormat) {
                 case "json":
-                    body = JSON.stringify(total);
                     break;
 
                 case "text":
                     ext = "txt";
-                    body = total
-                        .map(item => `${item.rs_artist.replace('-', '')} - ${item.rs_track.replace('-', '')}`)
-                        .join("\n");
                     break;
 
                 default:
@@ -174,9 +173,36 @@ const compileList = command({
                     return;
             }
 
-            Deno.writeTextFileSync(`${path}.${ext}`, body, { create: true });
+            const fileLength = args.fileLimit ?? total.length;
+            const fileCount = Math.ceil(total.length / fileLength);
+            const numberSize = Math.floor(Math.log10(fileCount)) + 1;
+            for (let i = 0; i < fileCount; i++) {
+                const cur = total.slice(i * fileLength, (i + 1) * fileLength);
 
-            console.log(`Output is ${total.length} songs long for ${station.name}`);
+                let body;
+                switch (args.outputFormat) {
+                    case "json":
+                        body = JSON.stringify(cur);
+                        break;
+
+                    case "text":
+                        ext = "txt";
+                        body = cur
+                            .map(item => `${item.rs_artist.replace('-', '')} - ${item.rs_track.replace('-', '')}`)
+                            .join("\n");
+                        break;
+                }
+
+                Deno.writeTextFileSync(
+                    fileCount > 1
+                        ? `${path} ${(i+1).toString().padStart(numberSize, '0')}.${ext}`
+                        : `${path}.${ext}`,
+                    body,
+                    { create: true }
+                );
+            }
+
+            console.log(`Output is ${total.length} songs long for ${station.name} in ${fileCount} file(s)`);
             console.groupEnd();
         }
     }
