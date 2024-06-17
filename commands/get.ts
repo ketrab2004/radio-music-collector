@@ -80,7 +80,7 @@ const getDate = command({
 
                         failedToHandleRadioStations ++;
 
-                        ghSummaryRows.push([`${handledRadioStations}.`, "❌", radio.name, msg]);
+                        ghSummaryRows.push([`${handledRadioStations}.`, "❌", radio.name, "-", msg]);
                         return;
                     }
 
@@ -89,7 +89,7 @@ const getDate = command({
                     Deno.mkdirSync(path, { recursive: true });
                     Deno.writeTextFileSync(`${path}/raw.json`, body, { create: true });
 
-                    ghSummaryRows.push([`${handledRadioStations}.`, "✅", radio.name, ""]);
+                    ghSummaryRows.push([`${handledRadioStations}.`, "✅", radio.name, result.length.toString(), ""]);
 
                 }).finally(() => {
                     logger.groupEnd();
@@ -102,7 +102,7 @@ const getDate = command({
                         gh.summary
                             .addHeading("Results")
                             .addTable([
-                                ["#", "Result", "Radio", "Message"],
+                                ["#", "Result", "Radio", "Songs", "Message"],
                                 ...ghSummaryRows
                             ])
                             .write();
