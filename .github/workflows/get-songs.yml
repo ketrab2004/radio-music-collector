@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     # for debugging/testing
   schedule:
-    - cron: 21 3 * * * # every day at 3:21
+    - cron: 21 1 * * * # every day at 3:21 CET
 
 jobs:
   get:
