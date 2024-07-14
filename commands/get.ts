@@ -37,7 +37,7 @@ const getDate = command({
     handler: args => {
         const logger = args.githubAction ? new GhLogger() : new SimpleLogger();
 
-        const runner = new ThrottledTaskRunner<Response>(args.fetchDelay);
+        const runner = new ThrottledTaskRunner(args.fetchDelay);
 
         const date = format(args.date, "yyyy-MM-dd");
         logger.info(`getting songs for ${date}`);
@@ -48,78 +48,91 @@ const getDate = command({
         const ghSummaryRows: string[][] = [];
 
         for (const radio of Radios) {
-            const body = `rid=${radio.rid}&rs_id=${radio.rs_id ?? 0}&date=${date}&hash=${radio.hash ?? ''}`;
+            let task: Promise<void>;
 
-            runner.addTask(() => fetch(`${radio.domain}/get-song`, {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "content-length": body.length.toString(),
-                    "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            if (!radio.canBeFetched) {
+                logger.notice(`Skipped ${radio.name}`, `skipping over ${radio.name}, as fetching it has been disabled`);
 
-                    accept: "application/json, text/javascript, */*; q=0.01",
+                ghSummaryRows.push([`${handledRadioStations}.`, "ℹ️", radio.name, "-", "fetching for this station is disabled"]);
 
-                    "user-agent": "githubPipelineRunner",
-                    origin: "https://github.com/ketrab2004/radio-music-collector",
-                    referer: radio.domain,
-                    "x-requested-with": "XMLHttpRequest"
-                },
-                body
-            }))
-                .then(response => response.text())
-                .then(body => {
-                    handledRadioStations ++;
+                task = Promise.resolve();
 
-                    logger.group(`parsing ${radio.name} response`);
+            } else {
+                const body = `rid=${radio.rid}&rs_id=${radio.rs_id ?? 0}&date=${date}&hash=${radio.hash ?? ''}`;
 
-                    const result = parsePlayedSongs(body);
+                task = runner.addTask(() => fetch(`${radio.domain}/get-song`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "content-length": body.length.toString(),
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
 
-                    if (typeof result == "string") {
-                        const msg = `for ${radio.name} ${result}`;
-                        logger.warn(`Request for ${radio.name} failed`, msg);
+                        accept: "application/json, text/javascript, */*; q=0.01",
 
-                        failedToHandleRadioStations ++;
+                        "user-agent": "githubPipelineRunner",
+                        origin: "https://github.com/ketrab2004/radio-music-collector",
+                        referer: radio.domain,
+                        "x-requested-with": "XMLHttpRequest"
+                    },
+                    body
+                }))
+                    .then(response => response.text())
+                    .then(body => {
+                        handledRadioStations ++;
 
-                        ghSummaryRows.push([`${handledRadioStations}.`, "❌", radio.name, "-", msg]);
-                        return;
-                    }
+                        logger.group(`parsing ${radio.name} response`);
 
-                    const path = `./data/${radio.name}/${format(date, "yyyy/MM/dd")}`;
+                        const result = parsePlayedSongs(body);
 
-                    Deno.mkdirSync(path, { recursive: true });
-                    Deno.writeTextFileSync(`${path}/raw.json`, body, { create: true });
+                        if (typeof result == "string") {
+                            const msg = `for ${radio.name} ${result}`;
+                            logger.warn(`Request for ${radio.name} failed`, msg);
 
-                    ghSummaryRows.push([`${handledRadioStations}.`, "✅", radio.name, result.length.toString(), ""]);
+                            failedToHandleRadioStations ++;
 
-                }).finally(() => {
-                    logger.groupEnd();
-                    if (handledRadioStations < Radios.length)
-                        return;
+                            ghSummaryRows.push([`${handledRadioStations}.`, "❌", radio.name, "-", msg]);
+                            return;
+                        }
 
-                    logger.info(`finished getting music played on ${Radios.length - failedToHandleRadioStations}/${Radios.length} radio stations on ${date} successfully!`);
+                        const path = `./data/${radio.name}/${format(date, "yyyy/MM/dd")}`;
 
-                    if (args.githubAction) {
-                        gh.summary
-                            .addHeading("Results")
-                            .addTable([
-                                ["#", "Result", "Radio", "Songs", "Message"],
-                                ...ghSummaryRows
-                            ])
-                            .write();
-                    }
+                        Deno.mkdirSync(path, { recursive: true });
+                        Deno.writeTextFileSync(`${path}/raw.json`, body, { create: true });
 
-                    if (failedToHandleRadioStations <= 0)
-                        return;
+                        ghSummaryRows.push([`${handledRadioStations}.`, "✅", radio.name, result.length.toString(), ""]);
+                    });
+            }
 
-                    const title = "Failed to get songs for all radio stations";
-                    const msg = `failed to get songs for ${failedToHandleRadioStations} radio station(s)`;
+            task.finally(() => {
+                logger.groupEnd();
 
-                    if (args.requireAllStations || failedToHandleRadioStations == Radios.length) {
-                        logger.error(title, msg);
-                    } else {
-                        logger.warn(title, msg);
-                    }
-                });
+                if (handledRadioStations < Radios.length)
+                    return;
+
+                logger.info(`finished getting music played on ${Radios.length - failedToHandleRadioStations}/${Radios.length} radio stations on ${date} successfully!`);
+
+                if (args.githubAction) {
+                    gh.summary
+                        .addHeading("Results")
+                        .addTable([
+                            ["#", "Result", "Radio", "Songs", "Message"],
+                            ...ghSummaryRows
+                        ])
+                        .write();
+                }
+
+                if (failedToHandleRadioStations <= 0)
+                    return;
+
+                const title = "Failed to get songs for all radio stations";
+                const msg = `failed to get songs for ${failedToHandleRadioStations} radio station(s)`;
+
+                if (args.requireAllStations || failedToHandleRadioStations == Radios.length) {
+                    logger.error(title, msg);
+                } else {
+                    logger.warn(title, msg);
+                }
+            });
         }
     }
 });
