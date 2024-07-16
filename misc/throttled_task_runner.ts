@@ -5,7 +5,8 @@ type QueueItem<T> = [
     runner: () => Promise<T>,
     resolver: (result: T) => void,
     // deno-lint-ignore no-explicit-any
-    reject: (reason?: any) => void
+    reject: (reason?: any) => void,
+    delay?: number
 ];
 
 export default class ThrottledTaskRunner {
@@ -23,12 +24,13 @@ export default class ThrottledTaskRunner {
         return this.running;
     }
 
-    public addTask<T = unknown>(task: () => Promise<T>): Promise<T> {
+    public addTask<T = unknown>(task: () => Promise<T>, customDelay?: number): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             this.queue.push([
                 task,
                 resolve as (value: unknown) => void, // typescript isn't smart enough to cast T | PromiseLike<T> to unknown
-                reject
+                reject,
+                customDelay
             ]);
 
             this.runStack();
@@ -55,7 +57,7 @@ export default class ThrottledTaskRunner {
                 item[2](e);
             }
 
-            await pause(this.delay);
+            await pause(item[3] ?? this.delay);
         }
 
         this.running = false;

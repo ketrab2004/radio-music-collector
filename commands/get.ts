@@ -51,13 +51,15 @@ const getDate = command({
             let task: Promise<void>;
 
             if (!radio.canBeFetched) {
-                handledRadioStations ++;
+                task = runner.addTask(() => {
+                    handledRadioStations ++;
 
-                logger.notice(`Skipped ${radio.name}`, `skipping over ${radio.name}, as fetching it has been disabled`);
+                    logger.notice(`Skipped ${radio.name}`, `skipping over ${radio.name}, as fetching it has been disabled`);
 
-                ghSummaryRows.push([`${handledRadioStations}.`, "ℹ️", radio.name, "-", "fetching for this station is disabled"]);
+                    ghSummaryRows.push([`${handledRadioStations}.`, "ℹ️", radio.name, "-", "fetching for this station is disabled"]);
 
-                task = Promise.resolve();
+                    return Promise.resolve();
+                }, 0);
 
             } else {
                 const body = `rid=${radio.rid}&rs_id=${radio.rs_id ?? 0}&date=${date}&hash=${radio.hash ?? ''}`;
