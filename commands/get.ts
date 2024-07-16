@@ -51,6 +51,8 @@ const getDate = command({
             let task: Promise<void>;
 
             if (!radio.canBeFetched) {
+                handledRadioStations ++;
+
                 logger.notice(`Skipped ${radio.name}`, `skipping over ${radio.name}, as fetching it has been disabled`);
 
                 ghSummaryRows.push([`${handledRadioStations}.`, "ℹ️", radio.name, "-", "fetching for this station is disabled"]);
