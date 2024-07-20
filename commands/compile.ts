@@ -62,7 +62,12 @@ const compileList = command({
             type: optional(number),
             long: "file-limit",
             description: "limit per file, to split the output to multiple files"
-        })
+        }),
+        removeCount: flag({
+            type: boolean,
+            long: "remove-count",
+            description: "removes \"#n\" from the start of song names before processing"
+        }),
     },
     handler: args => {
         const stations = getStations(args.stations);
@@ -93,7 +98,7 @@ const compileList = command({
                         continue;
                     }
 
-                    const songs = parsePlayedSongs(content);
+                    let songs = parsePlayedSongs(content);
 
                     if (typeof songs == "string") {
                         const msg = `for ${station.name} on ${curStr} ${songs}`;
@@ -106,11 +111,17 @@ const compileList = command({
                         }
                     }
 
+                    if (args.removeCount)
+                        songs = songs.map(s => {
+                            s.rs_track = s.rs_track.replace(/^\s*#\d+\s*/, '');
+                            return s;
+                        });
+
                     total = total.concat(songs.reverse());
                 }
             }
 
-            total = total.filter(item => item.rs_track);;
+            total = total.filter(item => item.rs_track);
 
             const songFrequencyMap = new Map<string, [RadioPlayedSong, number]>();
             for (const song of total) {
@@ -137,6 +148,10 @@ const compileList = command({
 
                     break;
                 }
+
+                default:
+                    console.error(`chosen order '${args.order}' doesn't exist`);
+                    return;
             }
 
             if (args.unique)
